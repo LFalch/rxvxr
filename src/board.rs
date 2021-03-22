@@ -1,6 +1,14 @@
-use super::{Plank, BinaryInsert};
+use super::{Plank, BinaryInsert, SubAbs};
 
 use std::fmt::{self, Display};
+
+#[derive(Debug)]
+pub enum BoardError {
+    ZeroPlank,
+    LogAlreadyExists,
+    PlankNotAlignedOrInvalidLength,
+    PlankNotBetweenLogs,
+}
 
 #[derive(Debug)]
 pub struct Board {
@@ -15,10 +23,16 @@ impl Board {
             planks: Vec::new(),
         }
     }
-    pub fn add_log(&mut self, x: u8, y: u8) {
-        self.logs[y as usize][x as usize] = true;
+    pub fn add_log(&mut self, x: u8, y: u8) -> Result<(), BoardError> {
+        let log = &mut self.logs[y as usize][x as usize];
+        if *log {
+            Err(BoardError::LogAlreadyExists)
+        } else {
+            *log = true;
+            Ok(())
+        }
     }
-    pub fn set_plank(&mut self, x1: u8, y1: u8, x2: u8, y2: u8) -> bool {
+    pub fn set_plank(&mut self, x1: u8, y1: u8, x2: u8, y2: u8) -> Result<(), BoardError> {
         if self.logs[y1 as usize][x1 as usize] && self.logs[y2 as usize][x2 as usize] {
             let dx = x2.sub_abs(x1);
             let dy = y2.sub_abs(y1);
@@ -27,13 +41,13 @@ impl Board {
             let pointing_right = dy == 0;
 
             let (x, y, length) = if pointing_down && pointing_right {
-                return false;
+                return Err(BoardError::ZeroPlank);
             } else if pointing_down && 1 <= dy && dy <= 3 {
                 (x1, y1.min(y2), dy)
             } else if pointing_right && 1 <= dx && dx <= 3 {
                 (x1.min(x2), y1, dx)
             } else {
-                return false;
+                return Err(BoardError::PlankNotAlignedOrInvalidLength);
             };
 
             let plank = Plank {
@@ -45,9 +59,9 @@ impl Board {
 
             self.planks.binary_insert(plank);
 
-            true
+            Ok(())
         } else {
-            false
+            Err(BoardError::PlankNotBetweenLogs)
         }
     }
 }
