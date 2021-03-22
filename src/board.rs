@@ -20,8 +20,8 @@ impl Board {
     }
     pub fn set_plank(&mut self, x1: u8, y1: u8, x2: u8, y2: u8) -> bool {
         if self.logs[y1 as usize][x1 as usize] && self.logs[y2 as usize][x2 as usize] {
-            let dx = x2.max(x1) - x1.min(x2);
-            let dy = y2.max(y1) - y1.min(y2);
+            let dx = x2.sub_abs(x1);
+            let dy = y2.sub_abs(y1);
 
             let pointing_down = dx == 0;
             let pointing_right = dy == 0;
